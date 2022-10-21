@@ -82,6 +82,9 @@ class DiscussionBot:
         self.end_gracefully()
 
         review_df = self.get_min_word_discussions_report()
+        pprint(review_df)
+        self.min_word_count_students_dict.clear()
+
         fname = dt.now().strftime('%m-%d-%yT%H-%M-%S') + 'discussion_review.csv'
         DFReviewWindow(self.theme, df=review_df, filename=fname)
 
@@ -256,7 +259,6 @@ class DiscussionBot:
             input("Enter to continue >>")
 
     def grade_discussion(self, step_thru=False):
-        self.min_word_count_students_dict.clear()
         links = self.browser.find_elements(By.CLASS_NAME, 'd2l-link') #all d2l links on page
         links[11].click() #idk what first 10 are, but index 10 is search options and 11 is first student
         self.currently_grading = True
@@ -330,6 +332,8 @@ class DiscussionBot:
         discussions_to_check_df['Original Post'] = op_list
         discussions_to_check_df['Reply 1'] = r1_list
         discussions_to_check_df['Reply 2'] = r2_list
+        
+        return discussions_to_check_df
 
     def get_student_name(self, shadow):
         # Get student's name (complicated AF as usual...)
