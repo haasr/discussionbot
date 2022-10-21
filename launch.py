@@ -1,4 +1,4 @@
-from tkwindow import DiscussionWindow, ProcWindow
+from tkwindow import DiscussionWindow
 import config
 
 if __name__ == '__main__':

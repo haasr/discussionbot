@@ -25,7 +25,7 @@ def print_title(title):
     print(f"{title}", end="\n"+"-"*44+"\n")
 
 class DFReviewWindow(themed_tk.ThemedTk, Toplevel):
-    def __init__(self, theme, df, filename='discussion_review.csv'):
+    def __init__(self, theme, df, discussion_name, filename='discussion_review.csv'):
         super().__init__(theme=theme, themebg=True)
         s = ttk.Style()
         s.configure('.', font=('Arial', 12))
@@ -37,7 +37,7 @@ class DFReviewWindow(themed_tk.ThemedTk, Toplevel):
 
         bgcolor = self.config('background')[4] # Current background color
         self.window_title_label = Label(
-            self, text='Review Discussions under Min Word Count',
+            self, text=f'Review {discussion_name} Discussions under Min Word Count',
             fg='#22a6b5',
             bg=bgcolor,
             font=('Arial', 15),
@@ -79,14 +79,16 @@ class DiscussionBot:
         self.login(self.email, password)
         self.navigate_to_discussion()
         self.grade_discussion()
-        self.end_gracefully()
+        self.dispose_browser_gracefully()
 
         review_df = self.get_min_word_discussions_report()
         pprint(review_df)
         self.min_word_count_students_dict.clear()
 
-        fname = dt.now().strftime('%m-%d-%yT%H-%M-%S') + 'discussion_review.csv'
-        DFReviewWindow(self.theme, df=review_df, filename=fname)
+        disc_name, fname = self.construct_dfreview_window_names()
+
+        d = DFReviewWindow(self.theme, df=review_df, discussion_name=disc_name, filename=fname)
+        d.mainloop()
 
     def step_thru(self, password):
         print_title('\nLogin')
@@ -104,11 +106,10 @@ class DiscussionBot:
         print_title('\nBegin grading')
         input("Enter to continue >>")
         self.grade_discussion(step_thru=True)
-        self.end_gracefully()
+        self.dispose_browser_gracefully()
 
         review_df = self.get_min_word_discussions_report()
         pprint(review_df)
-        
 
     def login(self, email, password):
         time.sleep(4)
@@ -132,7 +133,7 @@ class DiscussionBot:
             time.sleep(2)
         time.sleep(4)
 
-    def end_gracefully(self):
+    def dispose_browser_gracefully(self):
         self.browser.close()
         self.browser.quit()
 
@@ -334,6 +335,14 @@ class DiscussionBot:
         discussions_to_check_df['Reply 2'] = r2_list
         
         return discussions_to_check_df
+
+    def construct_dfreview_window_names(self):
+        disc_name = self.course_name[-3:] + '-' + self.discussion_name[:25]
+        fname = re.sub(r'[^A-Za-z0-9 ]+', '', disc_name)
+        fname = re.sub(r'\s+', '-', fname)
+        fname = f"{dt.now().strftime('%m-%dT%H-%M-%S')}_{fname}_review.csv"
+        
+        return disc_name, fname
 
     def get_student_name(self, shadow):
         # Get student's name (complicated AF as usual...)

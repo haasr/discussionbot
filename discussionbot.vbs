@@ -1,1 +1,1 @@
-CreateObject("Wscript.Shell").Run "python launch.py", 0
+CreateObject("Wscript.Shell").Run "python launch.py", 1
