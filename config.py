@@ -1,9 +1,9 @@
-THEME = 'light' # set dark or light
+THEME = 'dark' # set dark or light
 EMAIL = 'haasrr@etsu.edu' # your email here
 COURSES_LIST = [ # Change to your course names
     'CSCI-1100-015',
     'CSCI-1100-022',
-    'CSCI-1100-095'
+    'CSCI-1100-905'
 ]
 # Full names not needed -- just enough of the start of name to be meaningful
 DISCUSSIONS_LIST = [

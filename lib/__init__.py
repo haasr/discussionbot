@@ -86,21 +86,21 @@ class DiscussionBot:
         DFReviewWindow(self.theme, df=review_df, filename=fname)
 
     def step_thru(self, password):
-        print_title('Login')
-        input("Enter to continue >>")
+        print_title('\nLogin')
+        time.sleep(1)
         self.login(self.email, password)
         
-        print_title('2FA completed?')
+        print_title('\n2FA completed?')
         input("Enter to continue >>")
 
-        print_title('(m) Manually navigate to Discussion or (a) automatically?')
+        print_title('\n(m) Manually navigate to Discussion or\n(a) automatically?')
         text = input("m/a >>")
         self.navigate_to_discussion() if text.lower() == 'a' else print_title("Navigate to Discussion \"Assess\" screen")
         input("Enter to continue >>")
 
-        print_title('Begin grading')
+        print_title('\nBegin grading')
         input("Enter to continue >>")
-        self.grade_discussion()
+        self.grade_discussion(step_thru=True)
         self.end_gracefully()
 
         review_df = self.get_min_word_discussions_report()
@@ -134,6 +134,7 @@ class DiscussionBot:
         self.browser.quit()
 
     def navigate_to_discussion(self):
+        time.sleep(1)
         self.browser.find_element(By.CLASS_NAME, 'd2l-navigation-s-course-menu').click()
         time.sleep(1)
         self.browser.find_element(By.PARTIAL_LINK_TEXT, self.course_name).click()
@@ -149,11 +150,16 @@ class DiscussionBot:
         self.browser.find_element(By.ID, 'd2l_pageTitleActions_assess').click()
         time.sleep(1)
 
-    def grade_first_student(self):
+    def grade_first_student(self, step_thru=False):
+        print_title("\nGrade First Student:")
+
         shadow = Shadow(self.browser)
         shadow.set_explicit_wait(4, 3)
         elements = shadow.find_elements("span")
         inputs = shadow.find_elements('input')
+        # I have no fucking clue why but if the buttons line is not included,
+        # final_student = int(user_info[3]) doesn't parse...It's just magic. Just accept it.
+        buttons = shadow.find_elements('button')
         d2l_buttons = shadow.find_elements('d2l-button')
             
         try:
@@ -167,6 +173,7 @@ class DiscussionBot:
         except:
             overall_grade = inputs[5]
         user_info = elements[4].text.split()
+        
         final_student = int(user_info[3])
 
         # prevents students who didn't submit from breaking the bot
@@ -187,18 +194,22 @@ class DiscussionBot:
         # Send data to D2L
         overall_grade.clear()
         overall_grade.send_keys(total)
-        time.sleep(1)
+        time.sleep(1.5)
 
         try:
             save_draft.click()
         except:
             d2l_buttons[18].click()
         time.sleep(3)
-        next_student.click()
 
+        if step_thru:
+            input("Enter to continue >>\n")
+
+        next_student.click()
         return final_student
 
-    def grade_last_student(self):
+    def grade_last_student(self, step_thru=False):
+        print_title("\nGrade Last Student:")
         time.sleep(4)
         shadow = Shadow(self.browser)
         shadow.set_explicit_wait(4, 3)
@@ -233,7 +244,7 @@ class DiscussionBot:
 
         overall_grade.clear()
         overall_grade.send_keys(total)
-        time.sleep(1)
+        time.sleep(1.5)
 
         try:
             save_draft.click()
@@ -241,15 +252,19 @@ class DiscussionBot:
             d2l_buttons[18].click()
         time.sleep(3)
 
-    def grade_discussion(self):
+        if step_thru:
+            input("Enter to continue >>")
+
+    def grade_discussion(self, step_thru=False):
         self.min_word_count_students_dict.clear()
         links = self.browser.find_elements(By.CLASS_NAME, 'd2l-link') #all d2l links on page
         links[11].click() #idk what first 10 are, but index 10 is search options and 11 is first student
         self.currently_grading = True
         time.sleep(3)
 
-        final_student = self.grade_first_student()
+        final_student = self.grade_first_student(step_thru=step_thru)
 
+        print_title("\nEntering grading loop:")
         for i in range(1, final_student-1):
             time.sleep(4)
             shadow = Shadow(self.browser)
@@ -284,7 +299,7 @@ class DiscussionBot:
             # Send data to D2L
             overall_grade.clear()
             overall_grade.send_keys(total)
-            time.sleep(1)
+            time.sleep(1.5)
             try:
                 save_draft.click()
             except:
@@ -292,7 +307,11 @@ class DiscussionBot:
             time.sleep(3)
             next_student.click()
 
-        self.grade_last_student()
+            if step_thru:
+                input("Enter to continue >>")
+
+        self.grade_last_student(step_thru=step_thru)
+        self.currently_grading = False
 
     def get_min_word_discussions_report(self):
         return self.construct_discussions_to_check_df()
