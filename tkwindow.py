@@ -92,7 +92,7 @@ class DiscussionWindow(themed_tk.ThemedTk):
         self.title_large = 'CSCI-1100 Discussion Bot'
         w = 508; h = 364
         self.minsize(w, h)
-        place_window_top_left(self, w, h)
+        #place_window_top_left(self, w, h)
 
         self.init_components()
         self.init_labels()

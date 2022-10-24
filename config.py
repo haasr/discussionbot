@@ -7,6 +7,7 @@ COURSES_LIST = [ # Change to your course names
 ]
 # Full names not needed -- just enough of the start of name to be meaningful
 DISCUSSIONS_LIST = [
+    # For convenience, just list the discussions you still need to grade
     'W8: Other Office 365',
     'W9: PowerPoint',
     'W10: Powerpoint II',
