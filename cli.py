@@ -1,4 +1,4 @@
-from lib import DiscussionBot
+from lib.bot import DiscussionBot
 import config
 import numpy as np
 

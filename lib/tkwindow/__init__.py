@@ -4,7 +4,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from ttkthemes import themed_tk
 
-from lib import DiscussionBot
+from lib.bot import DiscussionBot
 
 def place_window_top_left(root, width, height):
     # get screen width and height
@@ -20,42 +20,6 @@ def place_left_of_window(window, root, width, height):
     x = window.winfo_x()/3
     y = window.winfo_y() - (window.winfo_y()/2)
     root.geometry('%dx%d+%d+%d' % (width, height, x, y))
-
-class DFReviewWindow(themed_tk.ThemedTk, Toplevel):
-    def __init__(self, theme, df, discussion_name, filename='discussion_review.csv'):
-        super().__init__(theme=theme, themebg=True)
-        s = ttk.Style()
-        s.configure('.', font=('Arial', 12))
-        self.title('Discussion Bot: Posts/Replies Review')
-        self.geometry("800x600")
-
-        self.df = df
-        self.filename = filename
-
-        bgcolor = self.config('background')[4] # Current background color
-        self.window_title_label = Label(
-            self, text=f'Review {discussion_name} Discussions under Min Word Count',
-            fg='#22a6b5',
-            bg=bgcolor,
-            font=('Arial', 15),
-            wraplength=400
-        )
-
-        self.text_area = Text(self, height=30, width=80)
-
-        self.save_button = ttk.Button(
-            self, text='Save to CSV file',
-            command=self.write_df_to_csv
-        )
-
-        self.window_title_label.pack()
-        self.text_area.pack()
-        self.save_button.pack()
-
-        self.text_area.insert(INSERT, chars=self.df.__str__())
-
-    def write_df_to_csv(self):
-        self.df.to_csv(self.filename, encoding='utf-8') 
 
 class ProcWindow(themed_tk.ThemedTk, Toplevel):
     def __init__(self, theme):
@@ -245,6 +209,3 @@ class DiscussionWindow(themed_tk.ThemedTk):
 
         self.start_button.place(x=180, y=308)
         self.exit_button.place(x=310, y=308)
-
-
-
