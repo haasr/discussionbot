@@ -128,7 +128,7 @@ root project folder and select ``discussionbot.vbs``.
 
 .. image::
     ./readme_images/windows-create-shortcut.gif
-    :width: 650
+    :width: 800
     :alt: Create Windows shortcut gif
 
 This is easier than running the program from a terminal although you don't get to see output
