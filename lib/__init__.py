@@ -7,13 +7,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from pyshadow.main import Shadow
 
-from multiprocessing import Process
-from tkinter import *
-from tkinter import messagebox
-from tkinter import ttk
-from ttkthemes import themed_tk
 from datetime import datetime as dt
 from pprint import pprint
+
+from lib.tkwindow import DFReviewWindow
 
 import pandas as pd
 import time
@@ -23,42 +20,6 @@ pd.set_option('display.max_rows', 150)
 
 def print_title(title):
     print(f"{title}", end="\n"+"-"*44+"\n")
-
-class DFReviewWindow(themed_tk.ThemedTk, Toplevel):
-    def __init__(self, theme, df, discussion_name, filename='discussion_review.csv'):
-        super().__init__(theme=theme, themebg=True)
-        s = ttk.Style()
-        s.configure('.', font=('Arial', 12))
-        self.title('Discussion Bot: Posts/Replies Review')
-        self.geometry("800x600")
-
-        self.df = df
-        self.filename = filename
-
-        bgcolor = self.config('background')[4] # Current background color
-        self.window_title_label = Label(
-            self, text=f'Review {discussion_name} Discussions under Min Word Count',
-            fg='#22a6b5',
-            bg=bgcolor,
-            font=('Arial', 15),
-            wraplength=400
-        )
-
-        self.text_area = Text(self, height=30, width=80)
-
-        self.save_button = ttk.Button(
-            self, text='Save to CSV file',
-            command=self.write_df_to_csv
-        )
-
-        self.window_title_label.pack()
-        self.text_area.pack()
-        self.save_button.pack()
-
-        self.text_area.insert(INSERT, chars=self.df.__str__())
-
-    def write_df_to_csv(self):
-        self.df.to_csv(self.filename, encoding='utf-8')
             
 class DiscussionBot:
     def __init__(self, theme, email, password, course_name, discussion_name, min_word_count=14, start_auto=True):
