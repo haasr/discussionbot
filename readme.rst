@@ -65,8 +65,8 @@ Code Setup
 Install dependencies
 --------------------
 
-Open Powershell (if on Windows) to the main folder of this cloned repository and install the
-requirements:
+Open Terminal (Mac) or PowerShell (Windows) to the main folder of this cloned repository and install
+the requirements:
 
 ``pip install -r requirements.txt``
 
