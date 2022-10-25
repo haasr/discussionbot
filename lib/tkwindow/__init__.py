@@ -6,20 +6,16 @@ from ttkthemes import themed_tk
 
 from lib.bot import DiscussionBot
 
-def place_window_top_left(root, width, height):
-    # get screen width and height
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
+def place_window_center(window):
+    window.withdraw()
+    window.update_idletasks()  # Update "requested size" from geometry manager
 
-    # calculate position x and y coordinates
-    x = (screen_width/2.5) - width
-    y = (screen_height/3) - height
-    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+    x = (window.winfo_screenwidth() - window.winfo_width()) / 2
+    y = (window.winfo_screenheight() - window.winfo_height()) / 2
+    window.geometry("+%d+%d" % (x, y))
 
-def place_left_of_window(window, root, width, height):
-    x = window.winfo_x()/3
-    y = window.winfo_y() - (window.winfo_y()/2)
-    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+    window.deiconify()
+
 
 class ProcWindow(themed_tk.ThemedTk, Toplevel):
     def __init__(self, theme):
@@ -92,16 +88,17 @@ class DiscussionWindow(themed_tk.ThemedTk):
         self.title_large = 'CSCI-1100 Discussion Bot'
         w = 508; h = 364
         self.minsize(w, h)
-        #place_window_top_left(self, w, h)
+        place_window_center(self)
 
         self.init_components()
         self.init_labels()
         self.add_to_window()
 
         p = ProcWindow(self.theme)
+        p.minsize(200, 300)
         p.grab_set()
-        place_left_of_window(self, p, 250, 300)
         self.proc_window = p
+        self.proc_window.attributes('-topmost', True)
 
         mainloop()
 
