@@ -10,6 +10,13 @@ GUI + modularized 1100 discussion grading bot.
     :alt: Showcase discussionbot GUI
 
 
+UPDATE GOOGLE CHROME!
+#####################
+
+The Chrome window may crash after you click "Start" if Chrome browser is not up to date.
+Make sure you `update and restart Chrome <https://support.google.com/chrome/answer/95414?hl=en&co=GENIE.Platform%3DDesktop>`_.
+
+
 Python Setup
 ############
 
