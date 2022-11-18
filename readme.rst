@@ -81,7 +81,7 @@ If that command does not work, try
 
 ``py -m pip install -r requirements.txt``
 
-(You will have to use ``pip3`` on Mac and Linux)
+(You may have to use ``pip3`` on some Linux distributions)
 
 
 Config
