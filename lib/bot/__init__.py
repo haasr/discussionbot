@@ -216,8 +216,8 @@ class DiscussionBot:
 
             print_title(f"\nStudent {i+1}")
             print(
-                f"Total:    {total}"
-                f"Feedback:\n{feedback}"
+                f"Total:    {total}/6"
+                f"\nFeedback:\n{feedback}"
             )
 
             self.check_min_word_count(shadow, num_threads=threads, num_replies=replies, 

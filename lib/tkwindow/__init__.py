@@ -98,7 +98,7 @@ class DiscussionWindow(themed_tk.ThemedTk):
         self.add_to_window()
 
         p = ProcWindow(self.theme)
-        p.minsize(200, 300)
+        p.minsize(200, 200)
         p.grab_set()
         self.proc_window = p
         self.proc_window.attributes('-topmost', True)
