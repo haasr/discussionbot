@@ -18,10 +18,13 @@ import pandas as pd
 import time
 import re
 
+
 pd.set_option('display.max_rows', 150)
+
 
 def print_title(title):
     print(f"{title}", end="\n"+"-"*44+"\n")
+
 
 class DFReviewWindow(themed_tk.ThemedTk, Toplevel):
     def __init__(self, theme, df, discussion_name, filename='discussion_review.csv'):
@@ -58,7 +61,8 @@ class DFReviewWindow(themed_tk.ThemedTk, Toplevel):
 
     def write_df_to_csv(self):
         self.df.to_csv(self.filename, encoding='utf-8') 
-            
+
+
 class DiscussionBot:
     def __init__(self, theme, email, password, course_name, discussion_name, min_word_count=14, start_auto=True):
         self.min_word_count_students_dict = {}
@@ -73,7 +77,8 @@ class DiscussionBot:
         self.min_word_count=min_word_count
 
         self.start_automagically(password) if start_auto else self.step_thru(password)
-    
+
+
     def start_automagically(self, password):
         self.login(self.email, password)
         self.navigate_to_discussion()
@@ -88,6 +93,7 @@ class DiscussionBot:
 
         d = DFReviewWindow(self.theme, df=review_df, discussion_name=disc_name, filename=fname)
         d.mainloop()
+
 
     def step_thru(self, password):
         print_title('\nLogin')
@@ -109,6 +115,7 @@ class DiscussionBot:
 
         review_df = self.get_min_word_discussions_report()
         pprint(review_df)
+
 
     def login(self, email, password):
         time.sleep(4)
@@ -132,9 +139,11 @@ class DiscussionBot:
             time.sleep(2)
         time.sleep(4)
 
+
     def dispose_browser_gracefully(self):
         self.browser.close()
         self.browser.quit()
+
 
     def navigate_to_discussion(self):
         time.sleep(1)
@@ -153,110 +162,6 @@ class DiscussionBot:
         self.browser.find_element(By.ID, 'd2l_pageTitleActions_assess').click()
         time.sleep(1)
 
-    def grade_first_student(self, step_thru=False):
-        print_title("\nGrade First Student:")
-
-        shadow = Shadow(self.browser)
-        shadow.set_explicit_wait(4, 3)
-        elements = shadow.find_elements("span")
-        inputs = shadow.find_elements('input')
-        # I have no fucking clue why but if the buttons line is not included,
-        # final_student = int(user_info[3]) doesn't parse...It's just magic. Just accept it.
-        buttons = shadow.find_elements('button')
-        d2l_buttons = shadow.find_elements('d2l-button')
-            
-        try:
-            save_draft = d2l_buttons[20]
-        except:
-            save_draft = d2l_buttons[19]
-        next_student = elements[3]
-
-        try:
-            overall_grade = inputs[7]
-        except:
-            overall_grade = inputs[5]
-        user_info = elements[4].text.split()
-        
-        final_student = int(user_info[3])
-
-        # prevents students who didn't submit from breaking the bot
-        if 'Post:' in elements[24].text:
-            post_info = elements[24].text
-        else:
-            post_info = 'Post: 0 threads, 0 replies'
-
-        post_info = post_info.split()
-
-        threads = int(post_info[1])
-        replies = int(post_info[3])
-        total, feedback = self.grade_disc(threads, replies)
-
-        self.check_min_word_count(shadow, num_threads=threads, num_replies=replies, word_count=self.min_word_count)
-        self.enter_feedback(shadow, feedback)
-
-        # Send data to D2L
-        overall_grade.clear()
-        overall_grade.send_keys(total)
-        time.sleep(1.5)
-
-        try:
-            save_draft.click()
-        except:
-            d2l_buttons[18].click()
-        time.sleep(3)
-
-        if step_thru:
-            input("Enter to continue >>\n")
-
-        next_student.click()
-        return final_student
-
-    def grade_last_student(self, step_thru=False):
-        print_title("\nGrade Last Student:")
-        time.sleep(4)
-        shadow = Shadow(self.browser)
-        shadow.set_explicit_wait(4, 3)
-        elements = shadow.find_elements("span")
-        inputs = shadow.find_elements('input')
-        d2l_buttons = shadow.find_elements('d2l-button')
-            
-        try:
-            save_draft = d2l_buttons[20]
-        except:
-            save_draft = d2l_buttons[19]
-
-        try:
-            overall_grade = inputs[7]
-        except:
-            overall_grade = inputs[5]
-
-        # prevents students who didn't submit from breaking the bot
-        if 'Post:' in elements[24].text:
-            post_info = elements[24].text
-        else:
-            post_info = 'Post: 0 threads, 0 replies'
-
-        post_info = post_info.split()
-
-        threads = int(post_info[1])
-        replies = int(post_info[3])
-        total, feedback = self.grade_disc(threads, replies)
-
-        self.check_min_word_count(shadow, num_threads=threads, num_replies=replies, word_count=self.min_word_count)
-        self.enter_feedback(shadow, feedback)
-
-        overall_grade.clear()
-        overall_grade.send_keys(total)
-        time.sleep(1.5)
-
-        try:
-            save_draft.click()
-        except:
-            d2l_buttons[18].click()
-        time.sleep(3)
-
-        if step_thru:
-            input("Enter to continue >>")
 
     def grade_discussion(self, step_thru=False):
         links = self.browser.find_elements(By.CLASS_NAME, 'd2l-link') #all d2l links on page
@@ -264,28 +169,40 @@ class DiscussionBot:
         self.currently_grading = True
         time.sleep(3)
 
-        final_student = self.grade_first_student(step_thru=step_thru)
+        shadow = Shadow(self.browser)
+        shadow.set_explicit_wait(4, 3)
+        elements = shadow.find_elements("span")
+
+        final_student = self.get_final_student_index(elements)
+
+        print(f"\n>>>> Final student: {final_student} <<<<")
 
         print_title("\nEntering grading loop:")
-        for i in range(1, final_student-1):
+        for i in range(0, final_student):
             time.sleep(4)
+            ###########################################################
+            # Get all the relevant components (spans, inputs, buttons):
+            ###########################################################
             shadow = Shadow(self.browser)
             shadow.set_explicit_wait(4, 3)
             elements = shadow.find_elements("span")
             inputs = shadow.find_elements('input')
             d2l_buttons = shadow.find_elements('d2l-button')
             
-            save_draft = d2l_buttons[20]
-            next_student = elements[4]
+            save_draft_idx = self.get_save_draft_index(d2l_buttons)
+            save_draft = d2l_buttons[save_draft_idx]
 
-            try:
-                overall_grade = inputs[7]
-            except:
-                overall_grade = inputs[5]
+            next_student_idx = self.get_next_student_index(elements)
+            next_student = elements[next_student_idx]
+
+            overall_grade_idx = self.get_overall_grade_index(inputs)
+            overall_grade = inputs[overall_grade_idx]
 
             # prevents students who didn't submit from breaking the bot
-            if 'Post:' in elements[25].text:
-                post_info = elements[25].text
+            post_info_idx = self.get_post_info_index(elements)
+            
+            if 'Post:' in elements[post_info_idx].text:
+                post_info = elements[post_info_idx].text
             else:
                 post_info = 'Post: 0 threads, 0 replies'
 
@@ -293,30 +210,80 @@ class DiscussionBot:
 
             threads = int(post_info[1])
             replies = int(post_info[3])
+            ###########################################################
+
             total, feedback = self.grade_disc(threads, replies)
 
-            self.check_min_word_count(shadow, num_threads=threads, num_replies=replies, word_count=self.min_word_count)
+            print_title(f"\nStudent {i+1}")
+            print(
+                f"Total:    {total}"
+                f"Feedback:\n{feedback}"
+            )
+
+            self.check_min_word_count(shadow, num_threads=threads, num_replies=replies, 
+                                        word_count=self.min_word_count)
             self.enter_feedback(shadow, feedback)
             
             # Send data to D2L
             overall_grade.clear()
             overall_grade.send_keys(total)
-            time.sleep(1.5)
-            try:
-                save_draft.click()
-            except:
-                d2l_buttons[18].click()
-            time.sleep(3)
-            next_student.click()
+            save_draft.click()
+            time.sleep(.2)
+            try: next_student.click() # Try because this will fail at final student
+            except: pass
 
             if step_thru:
                 input("Enter to continue >>")
 
-        self.grade_last_student(step_thru=step_thru)
+        #self.grade_last_student(step_thru=step_thru)
         self.currently_grading = False
+
+
+    ######## start grade_discussion helper functions ########
+    def get_next_student_index(self, elements):
+        next_student_idx = -1
+        for i, el in enumerate(elements):
+            if 'd2l-navigation-highlight-border' in el.get_attribute('class'):
+                next_student_idx = i # Don't break. The correct one is the last (next button is rightmost in navigation)
+        return next_student_idx
+
+
+    def get_save_draft_index(self, buttons):
+        btn_idx = -1
+        for i, btn in enumerate(buttons):
+            if 'consistent-evaluation-footer-save-draft' in btn.get_attribute('id'):
+                btn_idx = i; break
+        return btn_idx
+
+
+    def get_overall_grade_index(self, inputs):
+        idx = -1
+        for i, ip in enumerate(inputs):
+            if ip.get_attribute('id') == 'd2l-uid-117':
+                idx = i; break
+        return idx
+
+
+    def get_post_info_index(self, elements):
+        idx = -1
+        for i, el in enumerate(elements):
+            if 'd2l-consistent-evaluation-discussion-posts-counts' in el.get_attribute('class'):
+                idx = i; break
+        return idx
+
+
+    def get_final_student_index(self, elements):
+        user_info_idx = -1
+        for i, el in enumerate(elements):
+            if re.match(r'User [0-9] of [0-9]', el.text):
+                user_info_idx = i; break
+        user_info = elements[user_info_idx].text.split()
+        return int(user_info[3])
+
 
     def get_min_word_discussions_report(self):
         return self.construct_discussions_to_check_df()
+
 
     def construct_discussions_to_check_df(self):
         discussions_to_check_df = pd.DataFrame(columns=['Name', 'Original Post', 'Reply 1', 'Reply 2'])
@@ -335,6 +302,7 @@ class DiscussionBot:
         
         return discussions_to_check_df
 
+
     def construct_dfreview_window_names(self):
         disc_name = self.course_name[-3:] + '-' + self.discussion_name[:25]
         fname = re.sub(r'[^A-Za-z0-9 ]+', '', disc_name)
@@ -343,12 +311,14 @@ class DiscussionBot:
         
         return disc_name, fname
 
+
     def get_student_name(self, shadow):
         # Get student's name (complicated AF as usual...)
         learner_context_bar_sr_outer = shadow.find_elements('d2l-consistent-evaluation-learner-context-bar')[0].shadow_root
         learner_context_bar_inner_div = learner_context_bar_sr_outer.find_elements(By.CLASS_NAME, 'd2l-consistent-evaluation-learner-context-bar')[0]
         learner_context_bar_sr_inner = learner_context_bar_inner_div.find_elements(By.TAG_NAME, 'd2l-consistent-evaluation-lcb-user-context')[0].shadow_root
         return learner_context_bar_sr_inner.find_elements(By.CLASS_NAME, 'd2l-consistent-evaluation-lcb-user-name')[0].text
+
 
     def check_min_word_count(self, shadow, num_threads, num_replies, word_count=10): # Type should be original, post1, post2
         if not num_threads == 0:
@@ -389,6 +359,7 @@ class DiscussionBot:
                 student_name = self.get_student_name(shadow)
                 self.min_word_count_students_dict[student_name] = posts_threads_to_check
 
+
     def grade_disc(self, threads, replies):
         total = 6
         feedback = ''
@@ -403,6 +374,7 @@ class DiscussionBot:
             feedback += 'Missing response to 1 classmate\n'
         return total,feedback
 
+
     def enter_feedback(self, shadow, feedback):
         feedback_panel = shadow.find_elements('d2l-consistent-evaluation-right-panel-block')[2]
         sr = feedback_panel.find_elements(By.TAG_NAME, 'd2l-htmleditor')[0].shadow_root
@@ -414,3 +386,5 @@ class DiscussionBot:
         b.send_keys(feedback)
         self.browser.switch_to.default_content()
         time.sleep(1)
+
+    ######## end grade_discussion helper functions  ########

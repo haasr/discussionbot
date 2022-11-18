@@ -16,7 +16,6 @@ def place_window_center(window):
 
     window.deiconify()
 
-
 class ProcWindow(themed_tk.ThemedTk, Toplevel):
     def __init__(self, theme):
         super().__init__(theme=theme, themebg=True)
@@ -41,10 +40,12 @@ class ProcWindow(themed_tk.ThemedTk, Toplevel):
 
         self.window_title_label.grid(row=0, column=0)
 
+
     def terminate_all_processes(self):
         for proc in self.active_processes:
             proc.terminate()
         self.active_processes.clear()
+
 
     def terminate_process(self, proc, row_number):
         proc.terminate()
@@ -54,6 +55,7 @@ class ProcWindow(themed_tk.ThemedTk, Toplevel):
 
         try: self.active_processes.remove(proc)
         except: pass
+
 
     def add_process(self, proc, proc_name):
         self.row_count += 1
@@ -71,6 +73,7 @@ class ProcWindow(themed_tk.ThemedTk, Toplevel):
         self.columnconfigure(0, weight=1)
 
         self.active_processes.append(proc)
+
 
 class DiscussionWindow(themed_tk.ThemedTk):
     def __init__(self, theme, email, courses_list, discussions_list):
@@ -102,10 +105,12 @@ class DiscussionWindow(themed_tk.ThemedTk):
 
         mainloop()
 
+
     def destroy_windows(self):
         self.proc_window.terminate_all_processes()
         self.proc_window.destroy()
         self.destroy()
+
 
     def init_discussion_bot_instance(self):
         course_name = self.course_name_field.get()
@@ -125,6 +130,7 @@ class DiscussionWindow(themed_tk.ThemedTk):
         p.start()
         pname = course_name[-3:] + '-' + discussion_name[:25]
         self.proc_window.add_process(p, proc_name=pname)
+
 
     def init_components(self):
         # Not using clear button; may implement, may not.
@@ -170,6 +176,7 @@ class DiscussionWindow(themed_tk.ThemedTk):
         )
         self.min_word_count_box.insert(0, 14)
 
+
     def init_labels(self):
         bgcolor = self.config('background')[4] # Current background color
         self.window_title_label = Label(
@@ -185,7 +192,8 @@ class DiscussionWindow(themed_tk.ThemedTk):
         self.course_name_label = ttk.Label(text='Course:')
         self.discussion_name_label = ttk.Label(text='Discussion:')
         self.min_word_count_label = ttk.Label(text='Min Word Count:')
-    
+
+
     def add_to_window(self):
         self.window_title_label.place(x=76, y=16)
 
